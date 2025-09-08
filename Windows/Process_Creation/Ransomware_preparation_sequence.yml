@@ -1,0 +1,35 @@
+title: Ransomware Preparation Activity Sequence
+id: eaa5dd38-6db4-4833-a14b-683bbbaf7cfb
+status: experimental
+description: Detects a sequence of commands commonly used to disable recovery mechanisms before ransomware deployment.
+author: Itiaba Gregory
+references:
+    - https://attack.mitre.org/techniques/T1490/
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_1:
+        Image|endswith: '\vssadmin.exe'
+        CommandLine|contains: 'delete shadows'
+    selection_2:
+        Image|endswith: '\wbadmin.exe'
+        CommandLine|contains: 'delete catalog'
+    selection_3:
+        Image|endswith: '\bcdedit.exe'
+        CommandLine|contains: 
+            - 'recoveryenabled no'
+            - 'bootstatuspolicy ignoreallfailures'
+    selection_4:
+        Image|endswith: '\wmic.exe'
+        CommandLine|contains: 'shadowcopy delete'
+    timeframe: 2m
+    condition: (1 of selection_*) and within timeframe
+    # For a stronger rule, require multiple selections:
+    # condition: ( (selection_1 and selection_3) or (selection_2 and selection_4) ) and within timeframe
+falsepositives:
+    - Legitimate system administration or backup software activities.
+level: high
+tags:
+    - attack.impact
+    - attack.t1490
