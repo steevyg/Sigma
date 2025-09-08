@@ -1,0 +1,32 @@
+title: Execution of Uncommon Network Proxy Tools
+id: 0bea3915-4aa7-4450-b880-7b4e0154458f
+status: experimental
+description: Detects the execution of known software proxy tools often abused by attackers for tunneling and C2.
+author: Itiaba Gregory
+references:
+    - https://attack.mitre.org/software/S0483
+    - https://github.com/samratashok/nishang/blob/master/Shells/Invoke-PowerShellTcpOneLine.ps1
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith:
+            - '\rsocks.exe'
+            - '\3proxy.exe'
+            - '\reGeorgSocksProxy.exe'
+            - '\htran.exe'
+            - '\lcx.exe'
+            - '\psexec.exe'
+        CommandLine|contains:
+            - ' -l ' 
+            - ' -p ' 
+            - ' -tran'
+            - ' -slave'
+    condition: selection
+falsepositives:
+    - Legitimate use of network testing or debugging tools by admin personnel (should be rare).
+level: high
+tags:
+    - attack.command_and_control
+    - attack.t1090
