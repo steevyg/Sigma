@@ -1,0 +1,32 @@
+title: Suspicious Process spawned from WMI Provider Host
+id: 369af738-fa8c-462e-bb15-b82e1a42b1b1 
+status: experimental
+description: Detects a process launched from wbem\WmiPrvSE.exe which is a common parent process for WMI-based lateral movement.
+author: Itiaba Gregory
+references:
+    - https://attack.mitre.org/techniques/T1047/
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        ParentImage|endswith: '\WmiPrvSE.exe'
+        Image|endswith:
+            - '\powershell.exe'
+            - '\cmd.exe'
+            - '\whoami.exe'
+            - '\nslookup.exe'
+            - '\ipconfig.exe'
+            - '\system32\rundll32.exe'
+    filter:
+        User|endswith: 
+            - 'SYSTEM'
+            - 'Local Service'
+            - 'Network Service'
+    condition: selection and not filter
+falsepositives:
+    - Legitimate software management tools using WMI
+level: medium
+tags:
+    - attack.execution
+    - attack.t1047
