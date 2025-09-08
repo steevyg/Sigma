@@ -1,0 +1,27 @@
+title: Suspicious Certificate Enrollment Request - ESC1
+id: 4e4bb8cc-ca5d-4721-9842-df7e5ce599ba
+status: experimental
+description: Detects a certificate request where the requester is different from the certificate subject, potential exploitation of ESC1.
+author: Itiaba Gregory
+references:
+    - https://attack.mitre.org/techniques/T1649/
+logsource:
+    product: windows
+    service: security
+    definition: 'Requirements: Auditing for AD CS must be enabled (Event ID 4886/4887)'
+detection:
+    selection:
+        EventID: 4886 
+        AttributeRawData|contains: 
+            - 'ENROLLEE_SUPPLIES_SUBJECT' 
+        RequesterName|contains: '@' 
+        RequesterName|re: '.*@.*' 
+        SubjectName|contains: '@' 
+        RequesterName|re: '(?i)(admin|dc|svc|sql)'
+    condition: selection
+falsepositives:
+    - Specific PKI-enabled application provisioning. This should be extensively baselined.
+level: high
+tags:
+    - attack.privilege_escalation
+    - attack.t1649
