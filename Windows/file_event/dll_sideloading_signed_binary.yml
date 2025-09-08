@@ -1,0 +1,44 @@
+title: DLL Sideloading from User-Writable Directory
+id: 80d9a0a4-a8f4-4360-bdca-30a5134ef3df
+status: experimental
+description: Detects a DLL being created and then loaded by a signed process from a user-writable directory, a common DLL sideloading pattern.
+author: Itiaba Gregory
+references:
+    - https://attack.mitre.org/techniques/T1574/002/
+logsource:
+    category: file_event
+    product: windows
+detection:
+    selection_create:
+        EventID: 11 
+        TargetFilename|endswith: '.dll'
+        Image|endswith:
+            - '\powershell.exe'
+            - '\mshta.exe'
+            - '\cmd.exe'
+            - '\rundll32.exe'
+            - '\regsvr32.exe'
+        TargetFilename|re:
+            - '(?i)^[a-z]:\\users\\.*'
+            - '(?i)^[a-z]:\\programdata\\.*'
+            - '(?i)^[a-z]:\\windows\\temp\\.*'
+            - '(?i)^[a-z]:\\temp\\.*'
+    selection_load:
+        EventID: 7 
+        ImageLoaded|re: '(?i).*\.(dll|ocx)$' 
+        Image|re: '(?i).*\.(exe)$'
+        Signed: 'true' 
+        ImageLoaded|re: 
+            - '(?i)^[a-z]:\\users\\.*'
+            - '(?i)^[a-z]:\\programdata\\.*'
+            - '(?i)^[a-z]:\\windows\\temp\\.*'
+            - '(?i)^[a-z]:\\temp\\.*'
+    timeframe: 5m
+    condition: selection_create and selection_load and within timeframe
+falsepositives:
+    - Software installation or update processes.
+    - Some applications legitimately load plugins from user directories.
+level: high
+tags:
+    - attack.defense_evasion
+    - attack.t1574.002
