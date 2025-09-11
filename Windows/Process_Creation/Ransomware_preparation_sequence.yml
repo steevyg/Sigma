@@ -25,8 +25,6 @@ detection:
         CommandLine|contains: 'shadowcopy delete'
     timeframe: 2m
     condition: (1 of selection_*) and within timeframe
-    # For a stronger rule, require multiple selections:
-    # condition: ( (selection_1 and selection_3) or (selection_2 and selection_4) ) and within timeframe
 falsepositives:
     - Legitimate system administration or backup software activities.
 level: high
